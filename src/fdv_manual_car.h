@@ -5,7 +5,7 @@
 #include <godot_cpp/core/binder_common.hpp>
 #include <godot_cpp/variant/packed_float32_array.hpp>
 
-#include "fd_core.h"
+#include <fd_api.h>
 #include "fdv_vehicle_sim.h"
 
 namespace fdv {

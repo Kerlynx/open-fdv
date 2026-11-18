@@ -7,7 +7,7 @@
 #include <cmath>
 #include <type_traits>
 
-#include "fd_core.h"
+#include <fd_api.h>
 #include "fdv_vehicle_sim.h"
 
 namespace fdv {

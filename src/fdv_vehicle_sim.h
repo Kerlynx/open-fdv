@@ -8,7 +8,7 @@
 
 #include <cmath>
 
-#include "fd_core.h"
+#include <fd_api.h>
 
 namespace fdv {
 
