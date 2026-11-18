@@ -66,6 +66,11 @@ env.Append(CPPPATH=[sdk])
 env.Append(CFLAGS=["-std=c11"])
 env.Append(CPPDEFINES=["FD_CORE_STATIC"])
 
+# dlopen/dlsym. Modern glibc has them in libc, but older toolchains and the
+# BSDs need libdl named explicitly, and naming it is harmless everywhere.
+if env["platform"] in ("linux", "bsd", "freebsd", "openbsd", "netbsd"):
+    env.Append(LIBS=["dl"])
+
 sources = Glob("src/*.cpp") + Glob(core + "/src/*.c")
 
 if env["platform"] == "macos":

@@ -1,5 +1,7 @@
 #include "fdv_manual_car.h"
 
+#include "fdv_tuning.h"
+
 #include <godot_cpp/core/class_db.hpp>
 
 auto fdv::ManualCar::_bind_methods() -> void {
@@ -49,6 +51,7 @@ auto fdv::ManualCar::_bind_methods() -> void {
     godot::ClassDB::bind_method(godot::D_METHOD("step", "delta"), &ManualCar::step);
     godot::ClassDB::bind_method(godot::D_METHOD("reset_car"), &ManualCar::reset_car);
     godot::ClassDB::bind_method(godot::D_METHOD("apply_tuning", "tuning"), &ManualCar::apply_tuning);
+    godot::ClassDB::bind_method(godot::D_METHOD("get_tuning"), &ManualCar::get_tuning);
 
     godot::ClassDB::bind_method(godot::D_METHOD("set_colliders", "boxes"), &ManualCar::set_colliders);
     godot::ClassDB::bind_method(godot::D_METHOD("get_collider_count"), &ManualCar::get_collider_count);
@@ -166,45 +169,15 @@ auto fdv::ManualCar::apply_tuning(const godot::Dictionary &p_tuning) -> void {
     // Build the next tuning as a partial override of the current one, then apply
     // it through the C ABI so the change is a single deterministic mutation the
     // replication protocol can sync. The runtime state is untouched.
-    FdCarTuning next = car_state.tuning;
-    if (p_tuning.has("max_torque")) {
-        next.max_torque = static_cast<float>(static_cast<double>(p_tuning["max_torque"]));
-    }
-    if (p_tuning.has("idle_rpm")) {
-        next.idle_rpm = static_cast<float>(static_cast<double>(p_tuning["idle_rpm"]));
-    }
-    if (p_tuning.has("redline_rpm")) {
-        next.redline_rpm = static_cast<float>(static_cast<double>(p_tuning["redline_rpm"]));
-    }
-    if (p_tuning.has("final_drive_ratio")) {
-        next.final_drive_ratio = static_cast<float>(static_cast<double>(p_tuning["final_drive_ratio"]));
-    }
-    if (p_tuning.has("gear_count")) {
-        next.gear_count = static_cast<int32_t>(static_cast<int64_t>(p_tuning["gear_count"]));
-    }
-    if (p_tuning.has("wheel_radius")) {
-        next.wheel_radius = static_cast<float>(static_cast<double>(p_tuning["wheel_radius"]));
-    }
-    if (p_tuning.has("mass")) {
-        next.mass = static_cast<float>(static_cast<double>(p_tuning["mass"]));
-    }
-    if (p_tuning.has("drag")) {
-        next.drag = static_cast<float>(static_cast<double>(p_tuning["drag"]));
-    }
-    if (p_tuning.has("steer_rate")) {
-        next.steer_rate = static_cast<float>(static_cast<double>(p_tuning["steer_rate"]));
-    }
-    if (p_tuning.has("gear_ratios")) {
-        const godot::Array ratios = p_tuning["gear_ratios"];
-        const int n = ratios.size();
-        for (int i = 0; i < 6; i++) {
-            next.gear_ratios[i] = i < n ? static_cast<float>(static_cast<double>(ratios[i])) : 0.0f;
-        }
-    }
+    const FdCarTuning next = tuning_override(car_state.tuning, p_tuning);
     fd_car_apply_tuning(&car_state, &next);
     if (p_tuning.has("mouse_dpi")) {
         mouse_dpi = static_cast<double>(p_tuning["mouse_dpi"]);
     }
+}
+
+auto fdv::ManualCar::get_tuning() const -> godot::Dictionary {
+    return tuning_to_dictionary(car_state.tuning);
 }
 
 auto fdv::ManualCar::set_max_torque(double p_torque) -> void {

@@ -116,6 +116,12 @@ public:
     // config script is the business layer's job.
     auto apply_tuning(const godot::Dictionary &p_tuning) -> void;
 
+    // The active tuning, in the same shape apply_tuning() accepts. The
+    // counterpart exists so an effect can snapshot what it is about to change
+    // and put it back exactly -- without mirroring the core's default numbers
+    // in GDScript, where they would drift the next time the car is retuned.
+    [[nodiscard]] auto get_tuning() const -> godot::Dictionary;
+
     // Static world collision, delegated to the shared component.
     auto set_colliders(const godot::Array &p_boxes) -> void;
     [[nodiscard]] auto get_collider_count() const -> int64_t;
